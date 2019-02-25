@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<routes xmlns="http://symfony.com/schema/routing"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/routing
+        http://symfony.com/schema/routing/routing-1.0.xsd">
+
+    <route id="eos_com_view_schema"
+           controller="Eos\Bundle\ComView\Server\Controller\ComViewController::schema"
+           methods="GET"
+           path="/cv/schema.json"/>
+
+    <route id="eos_com_view_health"
+           controller="Eos\Bundle\ComView\Server\Controller\ComViewController::health"
+           methods="GET"
+           path="/cv/health"/>
+
+    <route id="eos_com_view_view"
+           controller="Eos\Bundle\ComView\Server\Controller\ComViewController::view"
+           methods="GET"
+           path="/cv/{name}"/>
+
+    <route id="eos_com_view_execute"
+           controller="Eos\Bundle\ComView\Server\Controller\ComViewController::execute"
+           methods="POST"
+           path="/cv/execute"/>
+
+</routes>
