@@ -37,9 +37,9 @@ class Configuration implements ConfigurationInterface
     {
         $viewDefinition = $schema->arrayNode('views')
             ->defaultValue([])
+            ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->addDefaultsIfNotSet()
-            ->useAttributeAsKey('name')
             ->children();
 
         $viewDefinition->scalarNode('description')->isRequired();
@@ -65,9 +65,9 @@ class Configuration implements ConfigurationInterface
     {
         $parameterDefinition = $parentDefinition->arrayNode($property)
             ->defaultNull()
+            ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->addDefaultsIfNotSet()
-            ->useAttributeAsKey('name')
             ->children();
 
         $parameterDefinition->scalarNode('description')->isRequired();
@@ -99,9 +99,9 @@ class Configuration implements ConfigurationInterface
     {
         $commandDefinition = $schema->arrayNode('commands')
             ->defaultValue([])
+            ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->addDefaultsIfNotSet()
-            ->useAttributeAsKey('name')
             ->children();
 
         $commandDefinition->scalarNode('description')->isRequired();
@@ -116,9 +116,9 @@ class Configuration implements ConfigurationInterface
     {
         $schemaDefinition = $schema->arrayNode('schemas')
             ->defaultValue([])
+            ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->addDefaultsIfNotSet()
-            ->useAttributeAsKey('name')
             ->children();
 
         $this->addSchemaDefinition($schemaDefinition);
@@ -141,9 +141,9 @@ class Configuration implements ConfigurationInterface
         $schemaDefinition->scalarNode('description')->isRequired();
         $propertyDefinition = $schemaDefinition->arrayNode('properties')
             ->isRequired()
+            ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->addDefaultsIfNotSet()
-            ->useAttributeAsKey('name')
             ->children();
 
         $propertyDefinition->scalarNode('description')->isRequired();
