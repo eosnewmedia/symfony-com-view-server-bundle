@@ -57,7 +57,7 @@ class EosComViewServerExtension extends ConfigurableExtension
      */
     private function normalizedSchema(array $mergedConfig)
     {
-        $schema = $mergedConfig['schema'];
+        $schema = $mergedConfig['schema'] ?? ['views' => [], 'commands' => [], 'schemas' => []];
 
         foreach ($schema['views'] as $key => $definition) {
             if (\array_key_exists('parameters', $definition) && \count($definition['parameters']) === 0) {
