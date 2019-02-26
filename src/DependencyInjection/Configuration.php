@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root('eos_com_view_server')->children();
 
-        $schema = $root->arrayNode('schema')->addDefaultsIfNotSet()->children();
+        $schema = $root->arrayNode('schema')->children();
         $this->addViewDefinitions($schema);
         $this->addCommandDefinitions($schema);
         $this->addSchemaDefinitions($schema);
@@ -36,25 +36,28 @@ class Configuration implements ConfigurationInterface
     private function addViewDefinitions(NodeBuilder $schema): void
     {
         $viewDefinition = $schema->arrayNode('views')
-            ->defaultValue([])
             ->useAttributeAsKey('name')
             ->arrayPrototype()
-            ->addDefaultsIfNotSet()
             ->children();
 
-        $viewDefinition->scalarNode('description')->isRequired();
+        $viewDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
         $this->addParameterDefinitions($viewDefinition, 'parameters');
+        // "parameters" will be removed by extension if empty
         $this->addParameterDefinitions($viewDefinition, 'pagination');
+        // "pagination" will be removed by extension if empty
 
-        $orderDefinition = $viewDefinition->arrayNode('orderBy')->defaultNull()->children();
-        $orderDefinition->booleanNode('required')->defaultFalse();
+        $orderDefinition = $viewDefinition->arrayNode('orderBy')->children();
+        $orderDefinition->booleanNode('required');
         $orderDefinition->arrayNode('possibilities')
             ->isRequired()
-            ->cannotBeEmpty()
+            ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
             ->scalarPrototype();
 
-        $this->addResponseDefinition($viewDefinition->arrayNode('data')->addDefaultsIfNotSet()->children());
+        $this->addResponseDefinition($viewDefinition->arrayNode('data')->children());
+
+        $viewDefinition->integerNode('minResults');
+        $viewDefinition->integerNode('maxResults');
     }
 
     /**
@@ -64,13 +67,11 @@ class Configuration implements ConfigurationInterface
     private function addParameterDefinitions(NodeBuilder $parentDefinition, string $property): void
     {
         $parameterDefinition = $parentDefinition->arrayNode($property)
-            ->defaultNull()
             ->useAttributeAsKey('name')
             ->arrayPrototype()
-            ->addDefaultsIfNotSet()
             ->children();
 
-        $parameterDefinition->scalarNode('description')->isRequired();
+        $parameterDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
         $parameterDefinition->enumNode('type')
             ->isRequired()
             ->values(
@@ -82,12 +83,12 @@ class Configuration implements ConfigurationInterface
                     'enum'
                 ]
             );
-        $parameterDefinition->booleanNode('required')->defaultFalse();
-        $parameterDefinition->booleanNode('multiple')->defaultFalse();
-        $parameterDefinition->booleanNode('request')->defaultTrue();
-        $parameterDefinition->booleanNode('response')->defaultTrue();
+        $parameterDefinition->booleanNode('required');
+        $parameterDefinition->booleanNode('multiple');
+        $parameterDefinition->booleanNode('request');
+        $parameterDefinition->booleanNode('response');
         $parameterDefinition->arrayNode('values')
-            ->defaultValue([])
+            // "values" will be removed by extension if type is not "enum"
             ->useAttributeAsKey('name')
             ->scalarPrototype();
     }
@@ -98,15 +99,13 @@ class Configuration implements ConfigurationInterface
     private function addCommandDefinitions(NodeBuilder $schema): void
     {
         $commandDefinition = $schema->arrayNode('commands')
-            ->defaultValue([])
             ->useAttributeAsKey('name')
             ->arrayPrototype()
-            ->addDefaultsIfNotSet()
             ->children();
 
-        $commandDefinition->scalarNode('description')->isRequired();
-        $this->addSchemaDefinition($commandDefinition->arrayNode('parameters')->defaultNull()->children());
-        $this->addResponseDefinition($commandDefinition->arrayNode('result')->defaultNull()->children());
+        $commandDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
+        $this->addSchemaDefinition($commandDefinition->arrayNode('parameters')->children());
+        $this->addResponseDefinition($commandDefinition->arrayNode('result')->children());
     }
 
     /**
@@ -115,10 +114,8 @@ class Configuration implements ConfigurationInterface
     private function addSchemaDefinitions(NodeBuilder $schema): void
     {
         $schemaDefinition = $schema->arrayNode('schemas')
-            ->defaultValue([])
             ->useAttributeAsKey('name')
             ->arrayPrototype()
-            ->addDefaultsIfNotSet()
             ->children();
 
         $this->addSchemaDefinition($schemaDefinition);
@@ -129,8 +126,8 @@ class Configuration implements ConfigurationInterface
      */
     private function addResponseDefinition(NodeBuilder $responseDefinition): void
     {
-        $responseDefinition->scalarNode('success')->defaultNull();
-        $responseDefinition->scalarNode('error')->defaultNull();
+        $responseDefinition->scalarNode('success');
+        $responseDefinition->scalarNode('error');
     }
 
     /**
@@ -138,15 +135,14 @@ class Configuration implements ConfigurationInterface
      */
     private function addSchemaDefinition(NodeBuilder $schemaDefinition): void
     {
-        $schemaDefinition->scalarNode('description')->isRequired();
+        $schemaDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
         $propertyDefinition = $schemaDefinition->arrayNode('properties')
             ->isRequired()
             ->useAttributeAsKey('name')
             ->arrayPrototype()
-            ->addDefaultsIfNotSet()
             ->children();
 
-        $propertyDefinition->scalarNode('description')->isRequired();
+        $propertyDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
         $propertyDefinition->enumNode('type')
             ->isRequired()
             ->values(
@@ -162,16 +158,16 @@ class Configuration implements ConfigurationInterface
                     'geoJson'
                 ]
             );
-        $propertyDefinition->booleanNode('nullable')->defaultFalse();
-        $propertyDefinition->booleanNode('multiple')->defaultFalse();
+        $propertyDefinition->booleanNode('nullable');
+        $propertyDefinition->booleanNode('multiple');
 
         $propertyDefinition->arrayNode('properties')
-            ->defaultValue([])
+            // "properties" will be removed by extension if type is not "object"
             ->useAttributeAsKey('name')
             ->variablePrototype();
 
         $propertyDefinition->arrayNode('values')
-            ->defaultValue([])
+            // "values" will be removed by extension if type is not "enum"
             ->useAttributeAsKey('name')
             ->scalarPrototype();
     }
