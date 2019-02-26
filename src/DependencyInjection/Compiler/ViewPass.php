@@ -26,7 +26,17 @@ class ViewPass implements CompilerPassInterface
 
         $views = $container->findTaggedServiceIds('com_view.view');
         foreach ($views as $id => $tags) {
-            $viewRegistry->addMethodCall('add', [new Reference($id)]);
+            foreach ($tags as $tag) {
+                $classPath = explode('\\', $id);
+
+                $viewRegistry->addMethodCall(
+                    'add',
+                    [
+                        $tag['view'] ?? lcfirst(end($classPath)),
+                        new Reference($id)
+                    ]
+                );
+            }
         }
     }
 }
