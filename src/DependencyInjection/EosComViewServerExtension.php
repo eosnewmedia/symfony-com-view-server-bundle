@@ -46,8 +46,10 @@ class EosComViewServerExtension extends ConfigurableExtension
         $container->autowire(ComViewServer::class)
             ->setPublic(false);
 
+        $container->setParameter('eos_com_view_server.schema', $this->normalizedSchema($mergedConfig));
+
         $container->autowire(ComViewController::class)
-            ->setArgument('$schema', $this->normalizedSchema($mergedConfig))
+            ->setArgument('$schema', '%eos_com_view_server.schema%')
             ->setPublic(true);
     }
 
