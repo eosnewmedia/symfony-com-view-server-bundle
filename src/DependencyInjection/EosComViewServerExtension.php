@@ -53,56 +53,70 @@ class EosComViewServerExtension extends ConfigurableExtension
 
     /**
      * @param array $mergedConfig
-     * @return mixed
+     * @return array
      */
-    private function normalizedSchema(array $mergedConfig)
+    private function normalizedSchema(array $mergedConfig): array
     {
         $schema = $mergedConfig['schema'] ?? ['views' => [], 'commands' => [], 'schemas' => []];
 
-        foreach ($schema['views'] as $key => $definition) {
+        foreach ($schema['views'] as &$definition) {
             if (\array_key_exists('parameters', $definition) && \count($definition['parameters']) === 0) {
-                unset($schema['views'][$key]['parameters']);
+                unset($definition['parameters']);
             }
             if (\array_key_exists('pagination', $definition) && \count($definition['pagination']) === 0) {
-                unset($schema['views'][$key]['pagination']);
+                unset($definition['pagination']);
             }
 
             if (\array_key_exists('parameters', $definition)) {
-                foreach ($definition['parameters'] as $name => $parameter) {
-                    if (array_key_exists('values', $parameter) && $parameter['type'] !== 'enum') {
-                        unset($schema['views'][$key]['parameters'][$name]['values']);
+                foreach ($definition['parameters'] as &$parameter) {
+                    if (\array_key_exists('values', $parameter) && $parameter['type'] !== 'enum') {
+                        unset($parameter['values']);
                     }
                 }
+                unset($parameter);
             }
         }
+        unset($definition);
 
-        foreach ($schema['commands'] as $key => $definition) {
+        foreach ($schema['commands'] as &$definition) {
             $parametersExists = \array_key_exists('parameters', $definition);
             if ($parametersExists && \array_key_exists('properties', $definition['parameters'])) {
-                foreach ($definition['parameters']['properties'] as $name => $property) {
-                    if (array_key_exists('properties', $property) && $property['type'] !== 'object') {
-                        unset($schema['commands'][$key]['parameters']['properties'][$name]['properties']);
-                    }
-                    if (array_key_exists('values', $property) && $property['type'] !== 'enum') {
-                        unset($schema['commands'][$key]['parameters']['properties'][$name]['values']);
-                    }
-                }
+                $definition['parameters']['properties'] = $this->normalizedProperties($definition['parameters']['properties']);
             }
         }
+        unset($definition);
 
-        foreach ($schema['schemas'] as $key => $definition) {
+        foreach ($schema['schemas'] as &$definition) {
             if (\array_key_exists('properties', $definition)) {
-                foreach ($definition['properties'] as $name => $property) {
-                    if (array_key_exists('properties', $property) && $property['type'] !== 'object') {
-                        unset($schema['schemas'] [$key]['properties'][$name]['properties']);
-                    }
-                    if (array_key_exists('values', $property) && $property['type'] !== 'enum') {
-                        unset($schema['schemas'] [$key]['properties'][$name]['values']);
-                    }
-                }
+                $definition['properties'] = $this->normalizedProperties($definition['properties']);
             }
         }
+        unset($definition);
 
         return $schema;
+    }
+
+    /**
+     * @param array $properties
+     * @return array
+     */
+    private function normalizedProperties(array $properties): array
+    {
+        foreach ($properties as &$property) {
+            if (\array_key_exists('properties', $property)) {
+                if ($property['type'] !== 'object') {
+                    unset($property['properties']);
+                } else {
+                    $property['properties'] = $this->normalizedProperties($property['properties']);
+                }
+            }
+
+            if (\array_key_exists('values', $property) && $property['type'] !== 'enum') {
+                unset($property['values']);
+            }
+        }
+        unset($property);
+
+        return $properties;
     }
 }

@@ -136,12 +136,18 @@ class Configuration implements ConfigurationInterface
     private function addSchemaDefinition(NodeBuilder $schemaDefinition): void
     {
         $schemaDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
-        $propertyDefinition = $schemaDefinition->arrayNode('properties')
-            ->isRequired()
-            ->useAttributeAsKey('name')
-            ->arrayPrototype()
-            ->children();
 
+        $this->addPropertyDefinition(
+            $schemaDefinition->arrayNode('properties')
+                ->isRequired()
+                ->useAttributeAsKey('name')
+                ->arrayPrototype()
+                ->children()
+        );
+    }
+
+    private function addPropertyDefinition(NodeBuilder $propertyDefinition, int $level = 0): void
+    {
         $propertyDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
         $propertyDefinition->enumNode('type')
             ->isRequired()
@@ -161,10 +167,19 @@ class Configuration implements ConfigurationInterface
         $propertyDefinition->booleanNode('nullable');
         $propertyDefinition->booleanNode('multiple');
 
-        $propertyDefinition->arrayNode('properties')
-            // "properties" will be removed by extension if type is not "object"
-            ->useAttributeAsKey('name')
-            ->variablePrototype();
+
+        // "properties" will be removed by extension if type is not "object"
+        if ($level < 15) {
+            $level++;
+            $this->addPropertyDefinition(
+                $propertyDefinition->arrayNode('properties')->useAttributeAsKey('name')->arrayPrototype()->children(),
+                $level
+            );
+        } else {
+            $propertyDefinition->arrayNode('properties')
+                ->useAttributeAsKey('name')
+                ->variablePrototype();
+        }
 
         $propertyDefinition->arrayNode('values')
             // "values" will be removed by extension if type is not "enum"
