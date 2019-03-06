@@ -22,6 +22,8 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root('eos_com_view_server')->children();
 
+        $root->scalarNode('allow_origin')->defaultValue('*');
+
         $schema = $root->arrayNode('schema')->children();
         $this->addViewDefinitions($schema);
         $this->addCommandDefinitions($schema);

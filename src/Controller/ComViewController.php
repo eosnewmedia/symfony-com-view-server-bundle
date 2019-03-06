@@ -24,13 +24,20 @@ class ComViewController
     private $schema;
 
     /**
+     * @var string
+     */
+    private $allowOrigin;
+
+    /**
      * @param ComViewServer $comViewServer
      * @param array $schema
+     * @param string $allowOrigin
      */
-    public function __construct(ComViewServer $comViewServer, array $schema)
+    public function __construct(ComViewServer $comViewServer, array $schema, string $allowOrigin)
     {
         $this->comViewServer = $comViewServer;
         $this->schema = $schema;
+        $this->allowOrigin = $allowOrigin;
     }
 
     /**
@@ -90,15 +97,21 @@ class ComViewController
         Request $request,
         \Eos\ComView\Server\Model\Value\Response $response
     ): JsonResponse {
+        $headers = ['Access-Control-Allow-Origin' => $this->allowOrigin];
+
         if ($request->query->has('pretty')) {
             return new JsonResponse(
                 \json_encode($response->getBody(), JSON_PRETTY_PRINT),
                 $response->getStatus(),
-                [],
+                $headers,
                 true
             );
         }
 
-        return new JsonResponse($response->getBody(), $response->getStatus());
+        return new JsonResponse(
+            $response->getBody(),
+            $response->getStatus(),
+            $headers
+        );
     }
 }

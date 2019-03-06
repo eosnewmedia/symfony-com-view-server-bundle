@@ -47,9 +47,11 @@ class EosComViewServerExtension extends ConfigurableExtension
             ->setPublic(false);
 
         $container->setParameter('eos_com_view_server.schema', $this->normalizedSchema($mergedConfig));
+        $container->setParameter('eos_com_view_server.allow_origin', $mergedConfig['allow_origin']);
 
         $container->autowire(ComViewController::class)
             ->setArgument('$schema', '%eos_com_view_server.schema%')
+            ->setArgument('$allowOrigin', '%eos_com_view_server.allow_origin%')
             ->setPublic(true);
     }
 
