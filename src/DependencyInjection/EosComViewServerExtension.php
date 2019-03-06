@@ -46,8 +46,81 @@ class EosComViewServerExtension extends ConfigurableExtension
         $container->autowire(ComViewServer::class)
             ->setPublic(false);
 
+        $container->setParameter('eos_com_view_server.schema', $this->normalizedSchema($mergedConfig));
+        $container->setParameter('eos_com_view_server.allow_origin', $mergedConfig['allow_origin']);
+
         $container->autowire(ComViewController::class)
-            ->setArgument('$schema', $mergedConfig['schema'])
+            ->setArgument('$schema', '%eos_com_view_server.schema%')
+            ->setArgument('$allowOrigin', '%eos_com_view_server.allow_origin%')
             ->setPublic(true);
+    }
+
+    /**
+     * @param array $mergedConfig
+     * @return array
+     */
+    private function normalizedSchema(array $mergedConfig): array
+    {
+        $schema = $mergedConfig['schema'] ?? ['views' => [], 'commands' => [], 'schemas' => []];
+
+        foreach ($schema['views'] as &$definition) {
+            if (\array_key_exists('parameters', $definition) && \count($definition['parameters']) === 0) {
+                unset($definition['parameters']);
+            }
+            if (\array_key_exists('pagination', $definition) && \count($definition['pagination']) === 0) {
+                unset($definition['pagination']);
+            }
+
+            if (\array_key_exists('parameters', $definition)) {
+                foreach ($definition['parameters'] as &$parameter) {
+                    if (\array_key_exists('values', $parameter) && $parameter['type'] !== 'enum') {
+                        unset($parameter['values']);
+                    }
+                }
+                unset($parameter);
+            }
+        }
+        unset($definition);
+
+        foreach ($schema['commands'] as &$definition) {
+            $parametersExists = \array_key_exists('parameters', $definition);
+            if ($parametersExists && \array_key_exists('properties', $definition['parameters'])) {
+                $definition['parameters']['properties'] = $this->normalizedProperties($definition['parameters']['properties']);
+            }
+        }
+        unset($definition);
+
+        foreach ($schema['schemas'] as &$definition) {
+            if (\array_key_exists('properties', $definition)) {
+                $definition['properties'] = $this->normalizedProperties($definition['properties']);
+            }
+        }
+        unset($definition);
+
+        return $schema;
+    }
+
+    /**
+     * @param array $properties
+     * @return array
+     */
+    private function normalizedProperties(array $properties): array
+    {
+        foreach ($properties as &$property) {
+            if (\array_key_exists('properties', $property)) {
+                if ($property['type'] !== 'object') {
+                    unset($property['properties']);
+                } else {
+                    $property['properties'] = $this->normalizedProperties($property['properties']);
+                }
+            }
+
+            if (\array_key_exists('values', $property) && $property['type'] !== 'enum') {
+                unset($property['values']);
+            }
+        }
+        unset($property);
+
+        return $properties;
     }
 }

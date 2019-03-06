@@ -24,13 +24,20 @@ class ComViewController
     private $schema;
 
     /**
+     * @var string
+     */
+    private $allowOrigin;
+
+    /**
      * @param ComViewServer $comViewServer
      * @param array $schema
+     * @param string $allowOrigin
      */
-    public function __construct(ComViewServer $comViewServer, array $schema)
+    public function __construct(ComViewServer $comViewServer, array $schema, string $allowOrigin)
     {
         $this->comViewServer = $comViewServer;
         $this->schema = $schema;
+        $this->allowOrigin = $allowOrigin;
     }
 
     /**
@@ -43,7 +50,7 @@ class ComViewController
     {
         $response = $this->comViewServer->view($name, $request->query->all());
 
-        return new JsonResponse($response->getBody(), $response->getStatus());
+        return $this->createJsonResponse($request, $response);
     }
 
     /**
@@ -55,24 +62,56 @@ class ComViewController
     {
         $response = $this->comViewServer->execute(\json_decode($request->getContent(), true));
 
-        return new JsonResponse($response->getBody(), $response->getStatus());
+        return $this->createJsonResponse($request, $response);
     }
 
     /**
+     * @param Request $request
      * @return Response
      */
-    public function schema(): Response
+    public function schema(Request $request): Response
     {
-        return new JsonResponse($this->schema);
+        return $this->createJsonResponse(
+            $request,
+            new \Eos\ComView\Server\Model\Value\Response(200, $this->schema)
+        );
     }
 
     /**
+     * @param Request $request
      * @return Response
      */
-    public function health(): Response
+    public function health(Request $request): Response
     {
         $response = $this->comViewServer->health();
 
-        return new JsonResponse($response->getBody(), $response->getStatus());
+        return $this->createJsonResponse($request, $response);
+    }
+
+    /**
+     * @param Request $request
+     * @param \Eos\ComView\Server\Model\Value\Response $response
+     * @return JsonResponse
+     */
+    private function createJsonResponse(
+        Request $request,
+        \Eos\ComView\Server\Model\Value\Response $response
+    ): JsonResponse {
+        $headers = ['Access-Control-Allow-Origin' => $this->allowOrigin];
+
+        if ($request->query->has('pretty')) {
+            return new JsonResponse(
+                \json_encode($response->getBody(), JSON_PRETTY_PRINT),
+                $response->getStatus(),
+                $headers,
+                true
+            );
+        }
+
+        return new JsonResponse(
+            $response->getBody(),
+            $response->getStatus(),
+            $headers
+        );
     }
 }

@@ -26,7 +26,17 @@ class CommandProcessorPass implements CompilerPassInterface
 
         $commandProcessors = $container->findTaggedServiceIds('com_view.command_processor');
         foreach ($commandProcessors as $id => $tags) {
-            $commandProcessorRegistry->addMethodCall('add', [new Reference($id)]);
+            foreach ($tags as $tag) {
+                $classPath = explode('\\', $id);
+
+                $commandProcessorRegistry->addMethodCall(
+                    'add',
+                    [
+                        $tag['command'] ?? lcfirst(end($classPath)),
+                        new Reference($id)
+                    ]
+                );
+            }
         }
     }
 }
