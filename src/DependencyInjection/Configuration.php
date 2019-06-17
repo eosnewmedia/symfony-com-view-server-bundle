@@ -82,7 +82,11 @@ class Configuration implements ConfigurationInterface
                     'int',
                     'float',
                     'bool',
-                    'enum'
+                    'enum',
+                    'dateTime',
+                    'date',
+                    'time',
+                    'duration',
                 ]
             );
         $parameterDefinition->booleanNode('required');
@@ -159,6 +163,10 @@ class Configuration implements ConfigurationInterface
                     'int',
                     'float',
                     'bool',
+                    'dateTime',
+                    'date',
+                    'time',
+                    'duration',
                     'object',
                     'typedValue',
                     'nested',
