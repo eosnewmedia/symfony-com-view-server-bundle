@@ -25,11 +25,32 @@ class Configuration implements ConfigurationInterface
         $root->scalarNode('allow_origin')->defaultValue('*');
 
         $schema = $root->arrayNode('schema')->children();
+        $this->addHeaderDefinitions($schema);
         $this->addViewDefinitions($schema);
         $this->addCommandDefinitions($schema);
         $this->addSchemaDefinitions($schema);
 
         return $treeBuilder;
+    }
+
+    /**
+     * @param NodeBuilder $schema
+     */
+    private function addHeaderDefinitions(NodeBuilder $schema): void
+    {
+        $viewDefinition = $schema->arrayNode('headers')
+            ->useAttributeAsKey('name')
+            ->arrayPrototype()
+            ->children();
+
+        $viewDefinition->scalarNode('description')->isRequired()->cannotBeEmpty();
+
+        $viewDefinition->booleanNode('required')->defaultFalse();
+        $viewDefinition->booleanNode('multiple')->defaultTrue();
+        $viewDefinition->booleanNode('viewRequest')->defaultTrue();
+        $viewDefinition->booleanNode('viewResponse')->defaultFalse();
+        $viewDefinition->booleanNode('commandRequest')->defaultTrue();
+        $viewDefinition->booleanNode('commandResponse')->defaultFalse();
     }
 
     /**
