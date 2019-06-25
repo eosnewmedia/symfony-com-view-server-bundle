@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Eos\Bundle\ComView\Server\Controller;
 
 use Eos\ComView\Server\ComViewServer;
+use Eos\ComView\Server\Model\Value\HttpResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,9 +49,14 @@ class ComViewController
      */
     public function view(Request $request, string $name): Response
     {
-        $response = $this->comViewServer->view($name, $request->query->all());
-
-        return $this->createJsonResponse($request, $response);
+        return $this->createJsonResponse(
+            $request,
+            $this->comViewServer->view(
+                $name,
+                $this->extractHeaders($request),
+                $request->query->all()
+            )
+        );
     }
 
     /**
@@ -60,9 +66,13 @@ class ComViewController
      */
     public function execute(Request $request): Response
     {
-        $response = $this->comViewServer->execute(\json_decode($request->getContent(), true));
-
-        return $this->createJsonResponse($request, $response);
+        return $this->createJsonResponse(
+            $request,
+            $this->comViewServer->execute(
+                $this->extractHeaders($request),
+                \json_decode($request->getContent(), true)
+            )
+        );
     }
 
     /**
@@ -73,7 +83,7 @@ class ComViewController
     {
         return $this->createJsonResponse(
             $request,
-            new \Eos\ComView\Server\Model\Value\Response(200, $this->schema)
+            new HttpResponse(200, $this->schema)
         );
     }
 
@@ -90,14 +100,14 @@ class ComViewController
 
     /**
      * @param Request $request
-     * @param \Eos\ComView\Server\Model\Value\Response $response
+     * @param HttpResponse $response
      * @return JsonResponse
      */
     private function createJsonResponse(
         Request $request,
-        \Eos\ComView\Server\Model\Value\Response $response
+        HttpResponse $response
     ): JsonResponse {
-        $headers = ['Access-Control-Allow-Origin' => $this->allowOrigin];
+        $headers = array_merge($response->getHeaders(), ['Access-Control-Allow-Origin' => $this->allowOrigin]);
 
         if ($request->query->has('pretty')) {
             return new JsonResponse(
@@ -113,5 +123,22 @@ class ComViewController
             $response->getStatus(),
             $headers
         );
+    }
+
+    /**
+     * @param Request $request
+     * @return string[][]
+     */
+    private function extractHeaders(Request $request): array
+    {
+        $headers = [];
+        foreach ($request->headers->all() as $header => $value) {
+            if (!is_array($value)) {
+                $value = [$value];
+            }
+            $headers[strtolower($header)] = $value;
+        }
+
+        return $headers;
     }
 }

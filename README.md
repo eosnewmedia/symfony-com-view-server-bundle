@@ -16,6 +16,9 @@ Create the file `config/packages/eos_com_view_server.yaml` with content like thi
 eos_com_view_server:
     allow_origin: '*' # cors control; * is the default value
     schema: # the definition which will be available as /cv/schema.json
+        headers:
+            authorization:
+                description: 'Authorization header'
         views:
             exampleView:
                 description: 'Example view'
@@ -84,3 +87,7 @@ services:
         tags:
             - { name: 'com_view.health_provider' } 
 ```
+
+# Headers
+
+Headers names will be lower cased by this bundle!
