@@ -8,6 +8,7 @@ use Eos\ComView\Server\Model\Value\HttpResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
@@ -45,7 +46,7 @@ class ComViewController
      * @param Request $request
      * @param string $name
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function view(Request $request, string $name): Response
     {
@@ -62,7 +63,7 @@ class ComViewController
     /**
      * @param Request $request
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function execute(Request $request): Response
     {
@@ -70,7 +71,7 @@ class ComViewController
             $request,
             $this->comViewServer->execute(
                 $this->extractHeaders($request),
-                \json_decode($request->getContent(), true)
+                json_decode($request->getContent(), true)
             )
         );
     }
@@ -83,7 +84,7 @@ class ComViewController
     {
         return $this->createJsonResponse(
             $request,
-            new HttpResponse(200, $this->schema)
+            new HttpResponse(200, [], $this->schema)
         );
     }
 
@@ -111,7 +112,7 @@ class ComViewController
 
         if ($request->query->has('pretty')) {
             return new JsonResponse(
-                \json_encode($response->getBody(), JSON_PRETTY_PRINT),
+                json_encode($response->getBody(), JSON_PRETTY_PRINT),
                 $response->getStatus(),
                 $headers,
                 true
