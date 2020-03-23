@@ -19,8 +19,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('eos_com_view_server')->children();
+        $treeBuilder = new TreeBuilder('eos_com_view_server');
+        $root = $treeBuilder->getRootNode()->children();
 
         $root->scalarNode('allow_origin')->defaultValue('*');
 
