@@ -15,12 +15,12 @@ class Configuration implements ConfigurationInterface
     /**
      * Generates the configuration tree builder.
      *
-     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder The tree builder
+     * @return TreeBuilder The tree builder
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('eos_com_view_server')->children();
+        $treeBuilder = new TreeBuilder('eos_com_view_server');
+        $root = $treeBuilder->getRootNode()->children();
 
         $root->scalarNode('allow_origin')->defaultValue('*');
 

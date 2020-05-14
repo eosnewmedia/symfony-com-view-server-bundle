@@ -64,16 +64,16 @@ class EosComViewServerExtension extends ConfigurableExtension
         $schema = $mergedConfig['schema'] ?? ['views' => [], 'commands' => [], 'schemas' => []];
 
         foreach ($schema['views'] as &$definition) {
-            if (\array_key_exists('parameters', $definition) && \count($definition['parameters']) === 0) {
+            if (array_key_exists('parameters', $definition) && count($definition['parameters']) === 0) {
                 unset($definition['parameters']);
             }
-            if (\array_key_exists('pagination', $definition) && \count($definition['pagination']) === 0) {
+            if (array_key_exists('pagination', $definition) && count($definition['pagination']) === 0) {
                 unset($definition['pagination']);
             }
 
-            if (\array_key_exists('parameters', $definition)) {
+            if (array_key_exists('parameters', $definition)) {
                 foreach ($definition['parameters'] as &$parameter) {
-                    if (\array_key_exists('values', $parameter) && $parameter['type'] !== 'enum') {
+                    if (array_key_exists('values', $parameter) && $parameter['type'] !== 'enum') {
                         unset($parameter['values']);
                     }
                 }
@@ -83,15 +83,15 @@ class EosComViewServerExtension extends ConfigurableExtension
         unset($definition);
 
         foreach ($schema['commands'] as &$definition) {
-            $parametersExists = \array_key_exists('parameters', $definition);
-            if ($parametersExists && \array_key_exists('properties', $definition['parameters'])) {
+            $parametersExists = array_key_exists('parameters', $definition);
+            if ($parametersExists && array_key_exists('properties', $definition['parameters'])) {
                 $definition['parameters']['properties'] = $this->normalizedProperties($definition['parameters']['properties']);
             }
         }
         unset($definition);
 
         foreach ($schema['schemas'] as &$definition) {
-            if (\array_key_exists('properties', $definition)) {
+            if (array_key_exists('properties', $definition)) {
                 $definition['properties'] = $this->normalizedProperties($definition['properties']);
             }
         }
@@ -107,7 +107,7 @@ class EosComViewServerExtension extends ConfigurableExtension
     private function normalizedProperties(array $properties): array
     {
         foreach ($properties as &$property) {
-            if (\array_key_exists('properties', $property)) {
+            if (array_key_exists('properties', $property)) {
                 if ($property['type'] !== 'object') {
                     unset($property['properties']);
                 } else {
@@ -115,7 +115,7 @@ class EosComViewServerExtension extends ConfigurableExtension
                 }
             }
 
-            if (\array_key_exists('values', $property) && $property['type'] !== 'enum') {
+            if (array_key_exists('values', $property) && $property['type'] !== 'enum') {
                 unset($property['values']);
             }
         }
