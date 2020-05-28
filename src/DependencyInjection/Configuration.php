@@ -192,7 +192,8 @@ class Configuration implements ConfigurationInterface
                     'typedValue',
                     'nested',
                     'enum',
-                    'geoJson'
+                    'geoJson',
+                    'schema'
                 ]
             );
         $propertyDefinition->booleanNode('nullable');
@@ -216,5 +217,8 @@ class Configuration implements ConfigurationInterface
             // "values" will be removed by extension if type is not "enum"
             ->useAttributeAsKey('name')
             ->scalarPrototype();
+
+        // "source" will be removed by extension if type is not "schema"
+        $propertyDefinition->scalarNode('source');
     }
 }

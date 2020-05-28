@@ -118,6 +118,10 @@ class EosComViewServerExtension extends ConfigurableExtension
             if (array_key_exists('values', $property) && $property['type'] !== 'enum') {
                 unset($property['values']);
             }
+
+            if (array_key_exists('source', $property) && $property['type'] !== 'schema') {
+                unset($property['source']);
+            }
         }
         unset($property);
 
